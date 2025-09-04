@@ -1,0 +1,10 @@
+{
+	"java.project.sourcePaths": [
+		"src/test",
+		"src/main"
+	],
+
+	"java.project.outputPath": "bin",
+
+	"java.project.explorer.showNonJavaResources": true
+}

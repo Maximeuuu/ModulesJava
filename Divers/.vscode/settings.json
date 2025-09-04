@@ -1,0 +1,15 @@
+{
+	"java.project.sourcePaths": [
+		"data",
+		"src/test",
+		"src/main"
+	],
+
+	"java.project.referencedLibraries": [
+		"lib/**/*.jar"
+	],
+
+	"java.project.outputPath": "bin",
+
+	"java.project.explorer.showNonJavaResources": true
+}

@@ -1,0 +1,5 @@
+-parameters
+-d bin
+-encoding UTF-8
+--release 8
+-Xlint:-options
