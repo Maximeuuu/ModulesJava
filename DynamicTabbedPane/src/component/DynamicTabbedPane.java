@@ -172,6 +172,9 @@ public class DynamicTabbedPane extends JTabbedPane
 		if ( !listenerDefined ) return;
 
 		TabItem tabItem = tabAddListener.onAdd(getClosableTabCount());
-		this.addTab(tabItem);
+		if (tabItem != null)
+		{
+			this.addTab(tabItem);
+		}
 	}
 }
