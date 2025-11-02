@@ -17,7 +17,6 @@ public class TestCompatibiliteSwing
 	public static DynamicTabbedPane getDynamicTabbedPane()
 	{
 		DynamicTabbedPane tabbedPane = new DynamicTabbedPane();
-		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.setUI( new javax.swing.plaf.basic.BasicTabbedPaneUI() );
 		//tabbedPane.setUI( new javax.swing.plaf.metal.MetalTabbedPaneUI() );
 

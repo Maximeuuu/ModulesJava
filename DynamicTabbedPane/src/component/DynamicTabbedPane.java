@@ -3,14 +3,17 @@ package component;
 import javax.swing.*;
 
 import component.tabheader.AddTabHeader;
-import component.tabheader.ClosableTabHeader;
 import component.tabheader.SimpleTabHeader;
+import component.tabheader.TabHeader;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import event.TabAddListener;
-import event.TabCloseListener;
+import event.AddTabHeaderListener;
+import event.TabHeaderListener;
+import event.TabEvent;
+import event.TabItemEvent;
+import event.TabItemListener;
 
 //TODO: Ajouter raccourcis claviers (tab, fermer, nouvel onglet)
 
@@ -20,10 +23,9 @@ import event.TabCloseListener;
  * - Bouton de fermeture sur les onglets closables
  * - Sous-classes pour chaque type d'onglet
  */
-public class DynamicTabbedPane extends JTabbedPane
+public class DynamicTabbedPane extends JTabbedPane implements AddTabHeaderListener, TabHeaderListener
 {
-	private TabAddListener tabAddListener;
-	private TabCloseListener tabCloseListener;
+	private TabItemListener tabItemListener;
 
 	/* ----------------- */
 	/*   Constructeurs   */
@@ -42,7 +44,17 @@ public class DynamicTabbedPane extends JTabbedPane
 	public DynamicTabbedPane(int tabPlacement, int tabLayoutPolicy)
 	{
 		super(tabPlacement, tabLayoutPolicy);
+		//this.setUI( new DynamicTabbedPaneUI() ); //TODO: pas encore pret (en enlevant toutes les marges intérieures, il faut en rajouter manuellement pour les onglets classiques)
 		this.addDefaultAddTab();
+	}
+
+	/* NOUVEAUX */
+	public TabItem getTabItemAt( int index )
+	{
+		Component tabHeader = super.getTabComponentAt(index);
+		Component tabContent = super.getComponentAt(index);
+
+		return new TabItem((SimpleTabHeader)tabHeader, tabContent); //TODO: vérifier si il ne peut pas y avoir d'erreur lors du cast
 	}
 
 	/* ---------------------- */
@@ -52,18 +64,15 @@ public class DynamicTabbedPane extends JTabbedPane
 	private void addDefaultAddTab()
 	{
 		super.addTab(null, null);
-		super.setTabComponentAt(this.getClosableTabCount(), new AddTabHeader(this));
+		super.setTabComponentAt(this.getClosableTabCount(), new AddTabHeader());
+		super.setEnabledAt(this.getClosableTabCount(), false); // important
 	}
 
 	/* ------------- */
 	/*   Listeners   */
 	/* ------------- */
 
-	public void setTabAddListener(TabAddListener listener) { this.tabAddListener = listener; }
-	public void setTabCloseListener(TabCloseListener listener) { this.tabCloseListener = listener; }
-
-	public TabAddListener getTabAddListener(){ return this.tabAddListener; }
-	public TabCloseListener getTabCloseListener(){ return this.tabCloseListener; }
+	public void setTabItemListener( TabItemListener listener ){ this.tabItemListener = listener; }
 
 	/* --------------- */
 	/*   Utilitaires   */
@@ -106,7 +115,10 @@ public class DynamicTabbedPane extends JTabbedPane
 	{
 		int safeIndex = Math.min(index, Math.max(0, this.getClosableTabCount()));
 		super.insertTab(null, null, tabItem.getTabContent(), null, safeIndex);
-		super.setTabComponentAt(safeIndex, tabItem.getTabHeader());
+
+		SimpleTabHeader tabHeader = tabItem.getTabHeader();
+		tabHeader.setTabHeaderListener(this);
+		super.setTabComponentAt(safeIndex, tabHeader);
 	}
 
 	/* ---------------------------------- */
@@ -139,7 +151,7 @@ public class DynamicTabbedPane extends JTabbedPane
 	@Override
 	public void insertTab(String title, Icon icon, Component component, String tip, int index)
 	{
-		final SimpleTabHeader defaultTabHeader = new ClosableTabHeader(this, title);
+		final SimpleTabHeader defaultTabHeader = new SimpleTabHeader(title);
 		TabItem tabItem = new TabItem( defaultTabHeader, component );
 		this.insertTab(tabItem, index);
 	}
@@ -161,20 +173,36 @@ public class DynamicTabbedPane extends JTabbedPane
 	protected void processMouseEvent(MouseEvent e)
 	{
 		super.processMouseEvent(e);
-
 		boolean isMouse = e.getID() == MouseEvent.MOUSE_PRESSED;
 		if ( !isMouse ) return;
 
-		int index = indexAtLocation(e.getX(), e.getY());
+		int index = super.indexAtLocation(e.getX(), e.getY());
 		if (!isAddTabHeaderIndex(index) ) return;
 
-		boolean listenerDefined = tabAddListener != null;
-		if ( !listenerDefined ) return;
+		TabHeader tabHeader = (TabHeader)this.getTabComponentAt(index);
 
-		TabItem tabItem = tabAddListener.onAdd(getClosableTabCount());
-		if (tabItem != null)
-		{
-			this.addTab(tabItem);
-		}
+		this.tabAdding( new TabEvent(tabHeader) );
+	}
+
+	@Override
+	public void tabClosing(TabEvent e)
+	{
+		int index = super.indexOfTabComponent(e.getTabHeader());
+		TabItem tabItem = this.getTabItemAt(index);
+		this.remove(index);
+		
+		if( this.tabItemListener != null )
+			this.tabItemListener.tabItemClosed( new TabItemEvent(tabItem) );
+	}
+
+	@Override
+	public void tabAdding(TabEvent e)
+	{
+		SimpleTabHeader tabHeader = new SimpleTabHeader("new tab");
+		TabItem tabItem = new TabItem(tabHeader, new JPanel());
+		this.addTab( tabItem );
+
+		if( this.tabItemListener != null )
+			this.tabItemListener.tabItemAdded( new TabItemEvent(tabItem) );
 	}
 }
