@@ -4,8 +4,10 @@ setlocal enabledelayedexpansion
 REM Racine du projet
 cd /d "%~dp0"
 
-REM Vide le fichier compile.list
+REM Vide le fichier compile.list et cree le dossier bin si necessaire
 type nul > compile.list
+if not exist bin mkdir bin
+type nul > bin/.gitkeep
 
 REM Parcourt tous les fichiers .java sous src et ajoute le chemin relatif
 for /r src %%f in (*.java) do (
