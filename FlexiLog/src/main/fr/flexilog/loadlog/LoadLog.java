@@ -47,8 +47,14 @@ public class LoadLog
 	private void display( String msg )
 	{
 		String log = String.format("%s %s", msg, format.getNext(this.cntDisplay) );
-		System.out.print( this.getMaskForPrecLog() + log );
+		this.clean();
+		System.out.print(log);
 		this.logLength = log.length();
+	}
+
+	public void clean()
+	{
+		System.out.print( this.getMaskForPrecLog() );
 	}
 
 	private String getMaskForPrecLog()
@@ -58,6 +64,7 @@ public class LoadLog
 
 	public void end( String msg )
 	{
-		System.out.println(this.getMaskForPrecLog() + msg);
+		this.clean();
+		System.out.println(msg);
 	}
 }
