@@ -54,10 +54,16 @@ public class StepByStepLog
 	private void display( String msg )
 	{
 		String log = String.format("%s %s", msg, format.getProgression( this.actual, this.total ) );
-		System.out.print( this.getMaskForPrecLog() + log );
+		this.clean();
+		System.out.print( log );
 		this.logLength = log.length();
 	}
 
+	public void clean()
+	{
+		System.out.print( this.getMaskForPrecLog() );
+	}
+	
 	private String getMaskForPrecLog()
 	{
 		return '\r' + Outils.repeat(" ", this.logLength) + '\r';
